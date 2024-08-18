@@ -17,7 +17,6 @@ return function()
 		compile_path = vim.fn.stdpath("cache") .. "/catppuccin",
 		styles = {
 			comments = { "italic" },
-			properties = { "italic" },
 			functions = { "bold" },
 			keywords = { "italic" },
 			operators = { "bold" },
@@ -28,6 +27,7 @@ return function()
 			types = {},
 			strings = {},
 			variables = {},
+			properties = {},
 		},
 		integrations = {
 			treesitter = true,
@@ -83,6 +83,7 @@ return function()
 			overseer = false,
 			pounce = false,
 			rainbow_delimiters = true,
+			render_markdown = true,
 			sandwich = false,
 			semantic_tokens = true,
 			symbols_outline = false,
@@ -146,6 +147,7 @@ return function()
 
 					-- For trouble.nvim
 					TroubleNormal = { bg = transparent_background and cp.none or cp.base },
+					TroubleNormalNC = { bg = transparent_background and cp.none or cp.base },
 
 					-- For telescope.nvim
 					TelescopeMatching = { fg = cp.lavender },

@@ -8,6 +8,7 @@ completion["neovim/nvim-lspconfig"] = {
 	dependencies = {
 		{ "williamboman/mason.nvim" },
 		{ "williamboman/mason-lspconfig.nvim" },
+		{ "folke/neoconf.nvim" },
 		{
 			"Jint-lzxy/lsp_signature.nvim",
 			config = require("completion.lsp-signature"),
@@ -25,7 +26,7 @@ completion["stevearc/aerial.nvim"] = {
 	event = "LspAttach",
 	config = require("completion.aerial"),
 }
-completion["dnlhc/glance.nvim"] = {
+completion["DNLHC/glance.nvim"] = {
 	lazy = true,
 	event = "LspAttach",
 	config = require("completion.glance"),
@@ -34,10 +35,8 @@ completion["joechrisellis/lsp-format-modifications.nvim"] = {
 	lazy = true,
 	event = "LspAttach",
 }
-vim.g.nonels_suppress_issue58 = false
 completion["nvimtools/none-ls.nvim"] = {
 	lazy = true,
-	commit = "b4bd764cd1705086de4bd89f7ccf9d9ed0401259",
 	event = { "CursorHold", "CursorHoldI" },
 	config = require("completion.null-ls"),
 	dependencies = {
@@ -52,8 +51,9 @@ completion["hrsh7th/nvim-cmp"] = {
 	dependencies = {
 		{
 			"L3MON4D3/LuaSnip",
-			dependencies = { "rafamadriz/friendly-snippets" },
+			build = "make install_jsregexp",
 			config = require("completion.luasnip"),
+			dependencies = { "rafamadriz/friendly-snippets" },
 		},
 		{ "lukas-reineke/cmp-under-comparator" },
 		{ "saadparwaiz1/cmp_luasnip" },

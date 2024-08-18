@@ -4,9 +4,6 @@ return function()
 		type = require("modules.utils.icons").get("type"),
 		cmp = require("modules.utils.icons").get("cmp"),
 	}
-	local t = function(str)
-		return vim.api.nvim_replace_termcodes(str, true, true, true)
-	end
 
 	local border = function(hl)
 		return {
@@ -69,7 +66,7 @@ return function()
 
 	local cmp = require("cmp")
 	require("modules.utils").load_plugin("cmp", {
-		preselect = cmp.PreselectMode.Item,
+		preselect = cmp.PreselectMode.None,
 		window = {
 			completion = {
 				border = border("PmenuBorder"),
@@ -93,6 +90,7 @@ return function()
 				vim_item.kind =
 					string.format(" %s  %s", lspkind_icons[vim_item.kind] or icons.cmp.undefined, vim_item.kind or "")
 
+				-- set up labels for completion entries
 				vim_item.menu = setmetatable({
 					cmp_tabnine = "[TN]",
 					copilot = "[CPLT]",
@@ -112,10 +110,16 @@ return function()
 					end,
 				})[entry.source.name]
 
+				-- cut down long results
 				local label = vim_item.abbr
 				local truncated_label = vim.fn.strcharpart(label, 0, 80)
 				if truncated_label ~= label then
 					vim_item.abbr = truncated_label .. "..."
+				end
+
+				-- deduplicate results from nvim_lsp
+				if entry.source.name == "nvim_lsp" then
+					vim_item.dup = 0
 				end
 
 				return vim_item
@@ -130,30 +134,40 @@ return function()
 		},
 		-- You can set mappings if you want
 		mapping = cmp.mapping.preset.insert({
-			["<CR>"] = cmp.mapping.confirm({ select = false, behavior = cmp.ConfirmBehavior.Replace }),
-			["<C-p>"] = cmp.mapping.select_prev_item(),
-			["<C-n>"] = cmp.mapping.select_next_item(),
+			["<C-p>"] = cmp.mapping.select_prev_item({ behavior = cmp.SelectBehavior.Select }),
+			["<C-n>"] = cmp.mapping.select_next_item({ behavior = cmp.SelectBehavior.Select }),
 			["<C-d>"] = cmp.mapping.scroll_docs(-4),
 			["<C-f>"] = cmp.mapping.scroll_docs(4),
-			["<C-w>"] = cmp.mapping.close(),
+			["<C-w>"] = cmp.mapping.abort(),
 			["<Tab>"] = cmp.mapping(function(fallback)
 				if cmp.visible() then
-					cmp.select_next_item()
+					cmp.select_next_item({ behavior = cmp.SelectBehavior.Select })
 				elseif require("luasnip").expand_or_locally_jumpable() then
-					vim.fn.feedkeys(t("<Plug>luasnip-expand-or-jump"))
+					require("luasnip").expand_or_jump()
 				else
 					fallback()
 				end
 			end, { "i", "s" }),
 			["<S-Tab>"] = cmp.mapping(function(fallback)
 				if cmp.visible() then
-					cmp.select_prev_item()
+					cmp.select_prev_item({ behavior = cmp.SelectBehavior.Select })
 				elseif require("luasnip").jumpable(-1) then
-					vim.fn.feedkeys(t("<Plug>luasnip-jump-prev"), "")
+					require("luasnip").jump(-1)
 				else
 					fallback()
 				end
 			end, { "i", "s" }),
+			["<CR>"] = cmp.mapping({
+				i = function(fallback)
+					if cmp.visible() and cmp.get_active_entry() then
+						cmp.confirm({ behavior = cmp.ConfirmBehavior.Insert, select = false })
+					else
+						fallback()
+					end
+				end,
+				s = cmp.mapping.confirm({ select = true }),
+				c = cmp.mapping.confirm({ behavior = cmp.ConfirmBehavior.Insert, select = true }),
+			}),
 		}),
 		snippet = {
 			expand = function(args)
@@ -170,7 +184,14 @@ return function()
 			{ name = "spell" },
 			{ name = "tmux" },
 			{ name = "orgmode" },
-			{ name = "buffer" },
+			{
+				name = "buffer",
+				option = {
+					get_bufnrs = function()
+						return vim.api.nvim_buf_line_count(0) < 7500 and vim.api.nvim_list_bufs() or {}
+					end,
+				},
+			},
 			{ name = "latex_symbols" },
 			{ name = "copilot" },
 			-- { name = "codeium" },

@@ -1,5 +1,6 @@
 return function()
 	local nvim_lsp = require("lspconfig")
+	require("completion.neoconf").setup()
 	require("completion.mason").setup()
 	require("completion.mason-lspconfig").setup()
 
@@ -18,5 +19,5 @@ return function()
 
 	pcall(require, "user.configs.lsp")
 
-	vim.api.nvim_command([[LspStart]]) -- Start LSPs
+	pcall(vim.cmd.LspStart) -- Start LSPs
 end
